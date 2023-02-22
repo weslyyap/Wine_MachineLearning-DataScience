@@ -199,11 +199,13 @@ def Data_Modelling(X_train, X_test, Y_train, Y_test):
     
 #Start executing
 st.write("Fetching 1st Dataset from Database...")
-file_path = "C:\\Users\\Weihau.yap\\Desktop/winequalityN.csv"
+#file_path = "C:\\Users\\Weihau.yap\\Desktop/winequalityN.csv"
+file_path = 'winequalityN.csv'
 data = Data_Fetching(file_path, 1)
 
 st.write("Fetching 2nd Dataset from Database...")
-file_path = "C:\\Users\\Weihau.yap\\Desktop/wine.csv"
+#file_path = "C:\\Users\\Weihau.yap\\Desktop/wine.csv"
+file_path = 'wine.csv'
 data1 = Data_Fetching(file_path, 2)
 
 st.write("Checking Data Distributions...")
