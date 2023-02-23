@@ -221,12 +221,12 @@ with st.sidebar:
         )
     
 #Start executing
-file_path = "C:\\Users\\Weihau.yap\\Desktop/winequalityN.csv"
-#file_path = 'winequalityN.csv'
+#file_path = "C:\\Users\\Weihau.yap\\Desktop/winequalityN.csv"
+file_path = 'winequalityN.csv'
 data = Data_Fetching(file_path, 1)
 
-file_path1 = "C:\\Users\\Weihau.yap\\Desktop/wine.csv"
-#file_path1 = 'wine.csv'
+#file_path1 = "C:\\Users\\Weihau.yap\\Desktop/wine.csv"
+file_path1 = 'wine.csv'
 data1 = Data_Fetching(file_path1, 2)
 
 
