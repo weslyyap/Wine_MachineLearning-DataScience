@@ -4,8 +4,10 @@ Spyder Editor
 
 This is a temporary script file.
 """
-
+import json
 import streamlit as st
+from streamlit_option_menu import option_menu
+from streamlit_lottie import st_lottie
 import pandas as pd
 import numpy as np
 from lifelines import KaplanMeierFitter
@@ -19,8 +21,8 @@ from sklearn import linear_model
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.metrics import confusion_matrix, accuracy_score
 from matplotlib.colors import ListedColormap
+import requests
 
-st.write("Wine Customer Segment Classifier")
 
 #Define sub functions
 def Data_Fetching(file_path, num):
@@ -28,15 +30,15 @@ def Data_Fetching(file_path, num):
     if num == 1:
         data = pd.read_csv(file_path)
         data = data.dropna()
-        st.write(data)
-        st.write("Rows, Columns: ", data.shape)
+        #st.write(data)
+        #st.write("Rows, Columns: ", data.shape)
         return data
         
     elif num == 2:
         data1 = pd.read_csv(file_path)
         data1 = data1.dropna()
-        st.write(data1)
-        st.write("Rows, Columns: ", data1.shape)
+        #st.write(data1)
+        #st.write("Rows, Columns: ", data1.shape)
         return data1
 
 def Data_Cleaning(data, data1, num):
@@ -147,6 +149,7 @@ def Data_Visualization(flag):
     return
 
 def Data_Preparation():
+    
     st.write("Normalizing Data...")
     X = newData.drop(['Customer'], axis = 1)
     Y = newData['Customer']
@@ -159,11 +162,12 @@ def Data_Preparation():
 
 
 def Data_Modelling(X_train, X_test, Y_train, Y_test):
+    
     #Using Linear Regression Model  
     Lmodel = linear_model.LogisticRegression(random_state = 0)
     Lmodel.fit(X_train, Y_train)
     Y_predL = Lmodel.predict(X_test)
-    st.write("Preicting results...")
+    st.subheader("Predicting results...")
     
     #Data Visualization On Linear Regression Model's Performance
     #Seaborn plot
@@ -175,74 +179,161 @@ def Data_Modelling(X_train, X_test, Y_train, Y_test):
     
     #Mathplotlib plot
     # construct cmap
-    flatui = ["#9b59b6", "#3498db", "#95a5a6"]
-    my_cmap = ListedColormap(sns.color_palette(flatui).as_hex())
+    # flatui = ["#9b59b6", "#3498db", "#95a5a6"]
+    # my_cmap = ListedColormap(sns.color_palette(flatui).as_hex())
 
-    N = 3
-    #data1 = np.random.randn(N)
-    #data2 = np.random.randn(N)
-    colors = {'red', 'green', 'yellow'}
-    scatter = plt.scatter(Y_test, Y_predL, c=Y_predL, cmap=my_cmap)
-    #plt.legend(labels = ["1", "2", "3"], ncol = 3, bbox_to_anchor = (2 , 1), title = 'Customer Segment')
-    plt.legend(*scatter.legend_elements(), title = 'Customer Segment', bbox_to_anchor = (1.32 , 1))
-    plt.colorbar()
-    plt.show()
-    st.pyplot(scatter.figure)
+    # N = 3
+    # #data1 = np.random.randn(N)
+    # #data2 = np.random.randn(N)
+    # colors = {'red', 'green', 'yellow'}
+    # scatter = plt.scatter(Y_test, Y_predL, c=Y_predL, cmap=my_cmap)
+    # #plt.legend(labels = ["1", "2", "3"], ncol = 3, bbox_to_anchor = (2 , 1), title = 'Customer Segment')
+    # plt.legend(*scatter.legend_elements(), title = 'Customer Segment', bbox_to_anchor = (1.32 , 1))
+    # plt.colorbar()
+    # plt.show()
+    # st.pyplot(scatter.figure)
     
     #Confusion matrix
-    st.write("Confusion Matrix...")
+    st.subheader("Confusion Matrix...")
     cm = confusion_matrix(Y_test, Y_predL)
     cm
     st.write("Model's accuracy(%): ", (accuracy_score(Y_test,Y_predL) * 100))
     return Y_predL
 
+def load_lottieurl(url: str):
+    r = requests.get(url)
+    if r.status_code != 200:
+        return None
+    return r.json()
+    
+#Set up front end
+#Webpage config
+st.set_page_config(page_title = "Wine With Me!", page_icon=":wine_glass:", layout = "wide")
+st.title("Wine Customer Segment Classifier ML Model")
+st.write("---")
+
+with st.sidebar:
+    selected = option_menu(
+        menu_title = "Main Menu",
+        options = ["Abstract", "Data Visualization", "Model Prediction"],
+        icons = ["eyeglasses", "bar-chart-line", "hourglass-split"],
+        default_index = 0,
+        )
     
 #Start executing
-st.write("Fetching 1st Dataset from Database...")
-#file_path = "C:\\Users\\Weihau.yap\\Desktop/winequalityN.csv"
-file_path = 'winequalityN.csv'
+file_path = "C:\\Users\\Weihau.yap\\Desktop/winequalityN.csv"
+#file_path = 'winequalityN.csv'
 data = Data_Fetching(file_path, 1)
 
-st.write("Fetching 2nd Dataset from Database...")
-#file_path = "C:\\Users\\Weihau.yap\\Desktop/wine.csv"
-file_path = 'wine.csv'
-data1 = Data_Fetching(file_path, 2)
+file_path1 = "C:\\Users\\Weihau.yap\\Desktop/wine.csv"
+#file_path1 = 'wine.csv'
+data1 = Data_Fetching(file_path1, 2)
 
-st.write("Checking Data Distributions...")
-Data_Visualization(True)
 
-st.write("Data Cleaning to ensure well distributed wine type...")
-data = Data_Cleaning(data, data1, 1)
-st.write(data)
-st.write("Rows, Columns: ", data.shape)
+if selected == "Abstract":
+    #Header section
+    with st.container():
+        
+        left_column, center_column, right_column  = st.columns(3)
+        with left_column:
+            lottie_hello = load_lottieurl("https://assets5.lottiefiles.com/packages/lf20_7psw7qge.json")
+            st_lottie(lottie_hello, key = "hello", speed = 1.3, width = 200)
 
-st.write("Evenly Distributed Wine type...")
-Data_Visualization(False)
+        with center_column:
+            #lottie_wine = load_lottieurl("https://assets6.lottiefiles.com/packages/lf20_ztpmvmp2.json")
+            lottie_wine = load_lottieurl("https://assets9.lottiefiles.com/private_files/lf30_6eroa6if.json")
+            st_lottie(lottie_wine, key = "wine", speed = 0.6, width = 200)
+            
+        with right_column:
+            st.subheader("Highlights of this project:")
+            st.write("""
+                     1. Create new datasets from multiple sources (Kaggle).
+                     2. Classify wine into different customer segments.
+                     3. Understand our target customers!
+                     """)
+                     
+    #st.write("This project is to build a Wine Recommender System")
+    st.subheader("Fetching 1st Dataset from Database...")
+    st.write("[Kaggle Source >] https://www.kaggle.com/datasets/rajyellow46/wine-quality")
+    st.write(data)
+    st.write("Rows, Columns: ", data.shape)
 
-st.write("Cleaning and Merging Both Datasets...")
-newData = Data_Cleaning(data, data1, 2)
-st.write(newData)
-st.write("Rows, Columns: ", newData.shape)
+    st.subheader("Fetching 2nd Dataset from Database...")
+    st.write("[Kaggle Source >] https://gist.github.com/tijptjik/9408623")
+    st.write(data1)
+    st.write("Rows, Columns: ", data1.shape)
 
-st.write("Preparing Dataset for builidng ML model...")
-X_train, X_test, Y_train, Y_test = Data_Preparation()
+elif selected == "Data Visualization":
+    st.subheader("Checking Data Distributions...")
+    Data_Visualization(True)
 
-st.write("Training built ML model...")   
-Y_predL = Data_Modelling(X_train, X_test, Y_train, Y_test)
-  
-# Then graph the distribution so we see how may red vs white bottles we have
-plt.clf()
-plt.rcParams["font.family"] = "sans-serif"
-plt.suptitle("Distribution of Customers and Wine Type", fontsize=20)
-plt.xlabel("xlabel", fontsize=18)
-plt.ylabel("ylabel", fontsize=16)
+    st.subheader("Data Cleaning to ensure well distributed wine type...")
+    data = Data_Cleaning(data, data1, 1)
+    st.write(data)
+    st.write("Rows, Columns: ", data.shape)
 
-ax = sns.countplot(
-    x="Customer", hue="wine type", data=newData, palette=["#3498db", "#95a5a6"]
-)
-ax.set(xlabel="Customer Segment", ylabel="Number of Customers")
-ax.legend(title = "Wine Type")
-st.pyplot(ax.figure)
+    st.subheader("Evenly Distributed Wine type...")
+    Data_Visualization(False)
+
+    st.subheader("Cleaning and Merging Both Datasets...")
+    newData = Data_Cleaning(data, data1, 2)
+    st.write(newData)
+    st.write("Rows, Columns: ", newData.shape)
+
+elif selected == "Model Prediction":
+    newData = Data_Cleaning(data, data1, 2)
+    st.subheader("Preparing Dataset for builidng ML model...")
+    X_train, X_test, Y_train, Y_test = Data_Preparation()
+
+    st.write("Training built ML model...")
+    with st.container():
+        
+        left_column, right_column = st.columns(2)
+        with left_column:
+            lottie_ml = load_lottieurl("https://assets2.lottiefiles.com/private_files/lf30_m075yjya.json")
+            st_lottie(lottie_ml, key = "ml", width = 300)
+            lottie_arrow = load_lottieurl("https://assets7.lottiefiles.com/packages/lf20_dbwrpcsu.json")
+            st_lottie(lottie_arrow, key = "arrow", width = 100)
+            
+        with right_column:
+            Y_predL = Data_Modelling(X_train, X_test, Y_train, Y_test)
+
+    #Header section
+    st.subheader("So, who's our target customer? :thought_balloon:")
+    st.write("####")
+    with st.container():
+        
+        left_column, right_column = st.columns(2)
+        with left_column:
+            st.write("Seems like white wine is more favorable in the market.")
+            st.write("The percentage of white wine is higher across all the customers!")
+            #lottie_good = load_lottieurl("https://assets8.lottiefiles.com/packages/lf20_ktzgqvov.json")
+            lottie_good1 = load_lottieurl("https://assets8.lottiefiles.com/packages/lf20_wdplkjoi.json")
+            #st_lottie(lottie_good, key = "good", width = 300)
+            st_lottie(lottie_good1, key = "good1", width = 300)
+
+        with right_column:
+            # Then graph the distribution so we see how may red vs white bottles we have
+            plt.clf()
+            plt.rcParams["font.family"] = "sans-serif"
+            plt.suptitle("Distribution of Customers and Wine Type", fontsize=12)
+            plt.xlabel("xlabel", fontsize=10)
+            plt.ylabel("ylabel", fontsize=10)
+
+            ax = sns.countplot(
+                x="Customer", hue="wine type", data=newData, palette=["#3498db", "#95a5a6"]
+            )
+            ax.set(xlabel="Customer Segment", ylabel="Number of Customers")
+            ax.legend(title = "Wine Type")
+            st.pyplot(ax.figure)
+    
+
+    
+
+
+
+    
+    
 
 
     
