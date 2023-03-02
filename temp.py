@@ -114,11 +114,10 @@ def Data_Cleaning(data, data1, num):
         cols.insert(0, cols.pop(cols.index('type_white'))) # 1 = white wine, 0 = red wine
         newData = newData.loc[:, cols]
         newData.rename({'type_white' : 'wine type'}, axis = 'columns', inplace = True)
-        newData.rename({'Wine' : 'Customer'}, axis = 'columns', inplace = True)
-        output = newData.pop('Customer')
-        newData.insert(newData.shape[1], 'Customer', output)
+        newData.rename({'Wine' : 'Cultivars'}, axis = 'columns', inplace = True)
+        output = newData.pop('Cultivars')
+        newData.insert(newData.shape[1], 'Cultivars', output)
         return newData
-    
 
 def Data_Visualization(flag):
     
@@ -151,8 +150,8 @@ def Data_Visualization(flag):
 def Data_Preparation():
     
     st.write("Normalizing Data...")
-    X = newData.drop(['Customer'], axis = 1)
-    Y = newData['Customer']
+    X = newData.drop(['Cultivars'], axis = 1)
+    Y = newData['Cultivars']
     X_features = X
     X = StandardScaler().fit_transform(X)
     
@@ -173,8 +172,13 @@ def Data_Modelling(X_train, X_test, Y_train, Y_test):
     #Seaborn plot
     plt.clf()
     sp = sns.scatterplot(x = Y_test, y = Y_predL, hue = Y_predL, palette = ['orange', 'dodgerblue', 'green'], size = Y_predL, legend = True)
-    sp.set(title = 'Distributions of Actual Value vs Predicted Value (Logistic Regression)', xlabel = 'Customer Segment', ylabel = 'Predicted Customer Segment')
-    sp.legend(title = 'Customer Segment')
+    sp.set(title = 'Distributions of Actual Value vs Predicted Value (Logistic Regression)', xlabel = 'Cultivars Class', ylabel = 'Predicted Cultivars Class')
+    #sp.set_title('Distributions of Actual Value vs Predicted Value (Logistic Regression)', fontdict={'size': 25})
+    sp.legend(title = 'Cultivars Class')
+    #sp.set_xlabel('Cultivars Class', fontdict={'size': 25})
+    #sp.set_ylabel('Predicted Cultivars Class', fontdict={'size': 25})
+    fig = plt.gcf()
+    fig.set_size_inches(10,8)
     st.pyplot(sp.figure)
     
     #Mathplotlib plot
@@ -195,9 +199,34 @@ def Data_Modelling(X_train, X_test, Y_train, Y_test):
     
     #Confusion matrix
     st.subheader("Confusion Matrix...")
+    #Using confusion matrrix from Scikit-learn
     cm = confusion_matrix(Y_test, Y_predL)
-    cm
-    st.write("Model's accuracy(%): ", (accuracy_score(Y_test,Y_predL) * 100))
+    #cm
+    # Change figure size and increase dpi for better resolution
+    plt.figure(figsize=(8,6), dpi=100)
+    # Scale up the size of all text
+    sns.set(font_scale = 1.1)
+    # Plot Confusion Matrix using Seaborn heatmap()
+    # Parameters:
+    # first param - confusion matrix in array format   
+    # annot = True: show the numbers in each heatmap cell
+    # fmt = 'd': show numbers as integers. 
+    ax = sns.heatmap(cm, annot=True, fmt='d', )
+    
+    # set x-axis label and ticks. 
+    ax.set_xlabel("Actual Cultivars Class", fontsize=14, labelpad=20)
+    ax.xaxis.set_ticklabels(['1', '2', '3'])
+    
+    # set y-axis label and ticks
+    ax.set_ylabel("Predicted Cultivars Class", fontsize=14, labelpad=20)
+    ax.yaxis.set_ticklabels(['1', '2', '3'])
+    
+    # set plot title
+    ax.set_title("Confusion Matrix for the Wine Cultivars Class Classification Model", fontsize=14, pad=20)
+    st.pyplot(ax.figure)
+    
+    st.write("--> Confusion Matrix visualizes the performance of wine cultivars class classification model")
+    st.write("--> Model's accuracy(%): ", (accuracy_score(Y_test,Y_predL) * 100))
     return Y_predL
 
 def load_lottieurl(url: str):
@@ -209,24 +238,26 @@ def load_lottieurl(url: str):
 #Set up front end
 #Webpage config
 st.set_page_config(page_title = "Wine With Me!", page_icon=":wine_glass:", layout = "wide")
-st.title("Wine Customer Segment Classifier ML Model")
+st.title("Wine Cultivars Class Classifier ML Model")
 st.write("---")
 
 with st.sidebar:
     selected = option_menu(
         menu_title = "Main Menu",
-        options = ["Abstract", "Data Visualization", "Model Prediction"],
-        icons = ["eyeglasses", "bar-chart-line", "hourglass-split"],
+        #options = ["Abstract", "Data Visualization", "Model Prediction"],
+        options = ["Abstract", "Data Visualization & Model Prediction"],
+        #icons = ["eyeglasses", "bar-chart-line", "hourglass-split"],
+        icons = ["eyeglasses", "hourglass-split"],
         default_index = 0,
         )
     
 #Start executing
-#file_path = "C:\\Users\\Weihau.yap\\Desktop/winequalityN.csv"
-file_path = 'winequalityN.csv'
+file_path = "C:\\Users\\Weihau.yap\\Desktop/winequalityN.csv"
+#file_path = 'winequalityN.csv'
 data = Data_Fetching(file_path, 1)
 
-#file_path1 = "C:\\Users\\Weihau.yap\\Desktop/wine.csv"
-file_path1 = 'wine.csv'
+file_path1 = "C:\\Users\\Weihau.yap\\Desktop/wine.csv"
+#file_path1 = 'wine.csv'
 data1 = Data_Fetching(file_path1, 2)
 
 
@@ -247,23 +278,47 @@ if selected == "Abstract":
         with right_column:
             st.subheader("Highlights of this project:")
             st.write("""
-                     1. Create new datasets from multiple sources (Kaggle).
-                     2. Classify wine into different customer segments.
-                     3. Understand our target customers!
+                     1. Create a new dataset from multiple sources (Kaggle) for model traning.
+                     2. A few assumptions were made in order to merge the datasets. (Explain down below)
+                     3. Classify wine into their respective cultivars.
+                     4. Recommend wine from different cultivars to our target customers!
                      """)
-                     
+                    
     #st.write("This project is to build a Wine Recommender System")
     st.subheader("Fetching 1st Dataset from Database...")
     st.write("[Kaggle Source >] https://www.kaggle.com/datasets/rajyellow46/wine-quality")
+    st.write("""
+             --> Wine quality dataset description
+             
+                 - Red and white variants of the Portugese "Vinho Verde" wine.
+                 - Due to privacy and logistic issues, only physicochemical (inputs) and sensory (the output) variables
+                   are available (e.g. there is no data about grape types, wine brand, wine selling price, etc.).
+             """)
     st.write(data)
-    st.write("Rows, Columns: ", data.shape)
+    st.write("Rows, Columns: ", data.shape) 
 
     st.subheader("Fetching 2nd Dataset from Database...")
     st.write("[Kaggle Source >] https://gist.github.com/tijptjik/9408623")
+    st.write("""
+             --> Wine dataset description
+             
+                 - Wines grown in the same region in Italy but derived from 3 different cultivars.
+                 - Initial data set had around 30 variables, but for some reason I only have the 13 dimensional version. 
+                   I had a list of what the 30 or so variables were, but a.) I lost it, and b.), I would not know 
+                   which 13 variables are included in the set.
+             """)
     st.write(data1)
     st.write("Rows, Columns: ", data1.shape)
-
-elif selected == "Data Visualization":
+    
+    st.subheader("Assumptions made to train the model...")
+    st.write("""
+             1. In wine dataset, 3 different cultivars are from any white wine/red wine cultivars in wine quality dataset.
+             2. With 1st assumption, we treat the chemical compositions in wine quality dataset to be the lost 10 variables in wine dataset.
+             3. With 1st and 2nd assumption, we will be merging both dataset with the "primary key" alcohol% (mean of alcohol from both datasets) 
+                in an ascending order to each cultivars.
+             """)
+    
+elif selected == "Data Visualization & Model Prediction":
     st.subheader("Checking Data Distributions...")
     Data_Visualization(True)
 
@@ -279,9 +334,7 @@ elif selected == "Data Visualization":
     newData = Data_Cleaning(data, data1, 2)
     st.write(newData)
     st.write("Rows, Columns: ", newData.shape)
-
-elif selected == "Model Prediction":
-    newData = Data_Cleaning(data, data1, 2)
+    
     st.subheader("Preparing Dataset for builidng ML model...")
     X_train, X_test, Y_train, Y_test = Data_Preparation()
 
@@ -291,9 +344,9 @@ elif selected == "Model Prediction":
         left_column, right_column = st.columns(2)
         with left_column:
             lottie_ml = load_lottieurl("https://assets2.lottiefiles.com/private_files/lf30_m075yjya.json")
-            st_lottie(lottie_ml, key = "ml", width = 300)
+            st_lottie(lottie_ml, key = "ml", width = 220)
             lottie_arrow = load_lottieurl("https://assets7.lottiefiles.com/packages/lf20_dbwrpcsu.json")
-            st_lottie(lottie_arrow, key = "arrow", width = 100)
+            st_lottie(lottie_arrow, key = "arrow", width = 200)
             
         with right_column:
             Y_predL = Data_Modelling(X_train, X_test, Y_train, Y_test)
@@ -305,8 +358,10 @@ elif selected == "Model Prediction":
         
         left_column, right_column = st.columns(2)
         with left_column:
-            st.write("Seems like white wine is more favorable in the market.")
-            st.write("The percentage of white wine is higher across all the customers!")
+            #st.write("Seems like white wine is more favorable in the market.")
+            #st.write("The percentage of white wine is higher across all the customers!")
+            st.write("Wine type distribution varies throughout each cultivars class!")
+            
             #lottie_good = load_lottieurl("https://assets8.lottiefiles.com/packages/lf20_ktzgqvov.json")
             lottie_good1 = load_lottieurl("https://assets8.lottiefiles.com/packages/lf20_wdplkjoi.json")
             #st_lottie(lottie_good, key = "good", width = 300)
@@ -316,16 +371,81 @@ elif selected == "Model Prediction":
             # Then graph the distribution so we see how may red vs white bottles we have
             plt.clf()
             plt.rcParams["font.family"] = "sans-serif"
-            plt.suptitle("Distribution of Customers and Wine Type", fontsize=12)
+            plt.suptitle("Distribution of Wine Type in each Cultivars Class", fontsize=12)
             plt.xlabel("xlabel", fontsize=10)
             plt.ylabel("ylabel", fontsize=10)
 
             ax = sns.countplot(
-                x="Customer", hue="wine type", data=newData, palette=["#3498db", "#95a5a6"]
+                x="Cultivars", hue="wine type", data=newData, palette=["#3498db", "#95a5a6"]
             )
-            ax.set(xlabel="Customer Segment", ylabel="Number of Customers")
-            ax.legend(title = "Wine Type")
+            ax.set(xlabel="Cultivars Class", ylabel="Number of Wine Type")
+            ax.legend(title = "Wine Type", labels = ["Red Wine", "White Wine"])
             st.pyplot(ax.figure)
+            
+            
+    #To see average chemical distribution across both red wine and white wine
+    newDataBC = newData.drop(columns=['wine type'], inplace = False)
+    nDplot = newDataBC.groupby(["Cultivars"]).mean().plot.bar(
+        stacked=True, cmap="RdYlBu", figsize=(15, 5)
+    )
+    
+    plt.rcParams["font.family"] = "sans-serif"
+    plt.suptitle(
+        "Average Chemical Distribution Across Wine Cultivars Class", fontsize=20
+    )
+    plt.xticks(size=18, rotation="horizontal")
+    plt.xlabel("Wine Cultivars Class", fontsize=18)
+    plt.ylabel("Chemical Distributions", fontsize = 18)
+    
+    plt.legend(loc="lower center", bbox_to_anchor=(0.5, -0.88), ncol=4, fontsize=15)
+    st.pyplot(nDplot.figure)
+    
+# elif selected == "Model Prediction":
+#     newData = Data_Cleaning(data, data1, 2)
+#     st.subheader("Preparing Dataset for builidng ML model...")
+#     X_train, X_test, Y_train, Y_test = Data_Preparation()
+
+#     st.write("Training built ML model...")
+#     with st.container():
+        
+#         left_column, right_column = st.columns(2)
+#         with left_column:
+#             lottie_ml = load_lottieurl("https://assets2.lottiefiles.com/private_files/lf30_m075yjya.json")
+#             st_lottie(lottie_ml, key = "ml", width = 300)
+#             lottie_arrow = load_lottieurl("https://assets7.lottiefiles.com/packages/lf20_dbwrpcsu.json")
+#             st_lottie(lottie_arrow, key = "arrow", width = 100)
+            
+#         with right_column:
+#             Y_predL = Data_Modelling(X_train, X_test, Y_train, Y_test)
+
+#     #Header section
+#     st.subheader("So, who's our target customer? :thought_balloon:")
+#     st.write("####")
+#     with st.container():
+        
+#         left_column, right_column = st.columns(2)
+#         with left_column:
+#             st.write("Seems like white wine is more favorable in the market.")
+#             st.write("The percentage of white wine is higher across all the customers!")
+#             #lottie_good = load_lottieurl("https://assets8.lottiefiles.com/packages/lf20_ktzgqvov.json")
+#             lottie_good1 = load_lottieurl("https://assets8.lottiefiles.com/packages/lf20_wdplkjoi.json")
+#             #st_lottie(lottie_good, key = "good", width = 300)
+#             st_lottie(lottie_good1, key = "good1", width = 300)
+
+#         with right_column:
+#             # Then graph the distribution so we see how may red vs white bottles we have
+#             plt.clf()
+#             plt.rcParams["font.family"] = "sans-serif"
+#             plt.suptitle("Distribution of Cultivars and Wine Type", fontsize=12)
+#             plt.xlabel("xlabel", fontsize=10)
+#             plt.ylabel("ylabel", fontsize=10)
+
+#             ax = sns.countplot(
+#                 x="Cultivars", hue="wine type", data=newData, palette=["#3498db", "#95a5a6"]
+#             )
+#             ax.set(xlabel="Cultivars Class", ylabel="Number of Wine Type")
+#             ax.legend(title = "Wine Type", labels = ["Red Wine", "White Wine"])
+#             st.pyplot(ax.figure)
     
 
     
