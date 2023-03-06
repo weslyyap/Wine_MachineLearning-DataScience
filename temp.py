@@ -4,6 +4,7 @@ Spyder Editor
 
 This is a temporary script file.
 """
+from pathlib import Path
 import json
 import streamlit as st
 from streamlit_option_menu import option_menu
@@ -252,12 +253,16 @@ with st.sidebar:
         )
     
 #Start executing
-file_path = "C:\\Users\\Weihau.yap\\Desktop/winequalityN.csv"
-#file_path = 'winequalityN.csv'
+current_dir = Path(__file__).parent if "__file__" in locals() else Path.cwd()
+print(current_dir)
+#file_path = "C:\\Users\\Weihau.yap\\Desktop/winequalityN.csv"
+#file_path = "C:/Users/Weihau.yap/.spyder-py3/winequalityN.csv"
+file_path = 'winequalityN.csv'
 data = Data_Fetching(file_path, 1)
 
-file_path1 = "C:\\Users\\Weihau.yap\\Desktop/wine.csv"
-#file_path1 = 'wine.csv'
+#file_path1 = "C:\\Users\\Weihau.yap\\Desktop/wine.csv"
+#file_path1 = "C:/Users/Weihau.yap/.spyder-py3/wine.csv"
+file_path1 = 'wine.csv'
 data1 = Data_Fetching(file_path1, 2)
 
 
